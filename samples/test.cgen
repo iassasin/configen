@@ -1,0 +1,7 @@
+insert table value {
+	"INSERT INTO" $table "(value) VALUES(" $value ")"
+}
+
+insert tbl neet
+insert tbl girlfriend
+insert tbl kanojo
