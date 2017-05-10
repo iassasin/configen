@@ -3,12 +3,10 @@
 #include <string>
 #include <iostream>
 
-#include "parser.hpp"
+#include "synparser/parser.hpp"
 #include "token.hpp"
 
-namespace synparser {
-
-class ParserConfigen : public parser<token> {
+class ParserConfigen : public synparser::parser<token> {
 protected:
 	int cur, curline;
 
@@ -28,5 +26,3 @@ public:
 		return curline;
 	}
 };
-
-}

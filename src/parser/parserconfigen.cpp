@@ -3,8 +3,6 @@
 #include <vector>
 #include <cstring>
 
-namespace synparser {
-
 using namespace std;
 
 const char ParserConfigen::spaces[] = " \t";
@@ -177,6 +175,4 @@ ParserConfigen::token_t ParserConfigen::next(){
 	}
 
 	return token_t(token_t::none);
-}
-
 }
