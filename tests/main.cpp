@@ -12,7 +12,7 @@
 #include <sstream>
 #include <functional>
 
-#include "parser/parserconfigen.hpp"
+#include "parser/parser_configen.hpp"
 
 #define CATCH_CONFIG_RUNNER
 #define CATCH_CONFIG_COLOUR_NONE
