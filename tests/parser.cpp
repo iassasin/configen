@@ -5,6 +5,9 @@
  *      Author: assasin
  */
 
+#include <vector>
+#include <sstream>
+
 #include "parser/parser_configen.hpp"
 
 #include "catchconfig.hpp"
@@ -12,23 +15,29 @@
 using namespace std;
 using namespace synparser;
 
+CATCH_STRING_MAKER(token){
+	return value.to_string();
+}
+
 TEST_CASE("Parser: basic", "[Parser]"){
 	stringstream str;
 
 	str << R"---(
-test v w {
+test | v w {
    data $v; dt dt
 	file data.txt
 	"("$a")" $b'[]'$c d
 }
 
-test "var ${test}" 1 2 $haha 
+test "${v2} var ${test}" 1 2 $haha 
 )---";
 
 	vector<token> res {
 		token(token::term, "\n"),
 
 		token(token::id, "test"),
+		token(token::space, " "),
+		token(token::id, "|"),
 		token(token::space, " "),
 		token(token::id, "v"),
 		token(token::space, " "),
@@ -75,7 +84,8 @@ test "var ${test}" 1 2 $haha
 		token(token::id, "test"),
 		token(token::space, " "),
 		token(token::str, "", {
-			token(token::str, "var "),
+			token(token::var, "v2"),
+			token(token::str, " var "),
 			token(token::var, "test"),
 		}),
 		token(token::space, " "),

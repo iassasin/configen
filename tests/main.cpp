@@ -9,8 +9,6 @@
 
 #include <iostream>
 #include <fstream>
-#include <sstream>
-#include <functional>
 
 #include "parser/parser_configen.hpp"
 
@@ -23,10 +21,6 @@ using namespace synparser;
 
 CATCH_TRANSLATE_EXCEPTION( compile_exception& ex ) {
 	return string("Compile error(") + to_string(ex.line) + "): " + ex.message;
-}
-
-CATCH_STRING_MAKER(token){
-	return value.to_string();
 }
 
 string readFile(string name){
