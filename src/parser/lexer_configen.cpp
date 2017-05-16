@@ -121,8 +121,25 @@ LexerConfigen::lexem_t LexerConfigen::parseFunctionDefinitionRegex(token_t id){
 }
 
 LexerConfigen::lexem_t LexerConfigen::parseFunctionCall(token_t id){
-	error("Not supported yet");
-	return nullptr;
+	auto fcall = make_shared<LexemFunctionCall>();
+	fcall->fname = id.value;
+
+	while (!(tok.isNone() || tok.isTerm())){
+		auto arg = parseArgument();
+		if (!arg){
+			error("Unexcepted token: " + tok.to_string());
+		}
+
+		fcall->arguments.push_back(arg);
+
+		if (tok.isSpace()){
+			nextToken();
+		}
+	}
+
+	nextToken();
+
+	return fcall;
 }
 
 LexerConfigen::lexem_t LexerConfigen::parseVarDefinition(){
