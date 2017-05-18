@@ -30,7 +30,6 @@ TEST_CASE("Lexer: print", "[Lexer]"){
 
 	ParserConfigen parser(input);
 	LexerConfigen lexer(parser);
-	lexer.nextToken();
 
 	auto blk = lexer.parse();
 	auto res = START(LexemBlock, LexemPtr)
@@ -66,7 +65,6 @@ test | a b {
 
 	ParserConfigen parser(input);
 	LexerConfigen lexer(parser);
-	lexer.nextToken();
 
 	auto blk = lexer.parse();
 	auto res = START(LexemBlock, LexemPtr)
@@ -93,7 +91,6 @@ test 1 2 3
 
 	ParserConfigen parser(input);
 	LexerConfigen lexer(parser);
-	lexer.nextToken();
 
 	auto blk = lexer.parse();
 	auto res = START(LexemBlock, LexemPtr)

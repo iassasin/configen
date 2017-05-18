@@ -11,6 +11,7 @@
 #include <fstream>
 
 #include "parser/parser_configen.hpp"
+#include "parser/interpreter_configen.hpp"
 
 #define CATCH_CONFIG_RUNNER
 #define CATCH_CONFIG_COLOUR_NONE
@@ -19,8 +20,12 @@
 using namespace std;
 using namespace synparser;
 
-CATCH_TRANSLATE_EXCEPTION( compile_exception& ex ) {
+CATCH_TRANSLATE_EXCEPTION(compile_exception &ex) {
 	return string("Compile error(") + to_string(ex.line) + "): " + ex.message;
+}
+
+CATCH_TRANSLATE_EXCEPTION(runtime_exception &ex) {
+	return string("Runtime error(") + to_string(ex.line) + "): " + ex.message;
 }
 
 string readFile(string name){

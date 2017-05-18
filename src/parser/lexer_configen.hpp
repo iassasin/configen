@@ -31,5 +31,5 @@ public:
 
 	lexem_t parseArgument();
 
-	virtual lexem_t parse() override { return parseBlock(); }
+	virtual lexem_t parse() override { nextToken(); return parseBlock(); }
 };

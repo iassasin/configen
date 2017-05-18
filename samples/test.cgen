@@ -1,5 +1,5 @@
-insert table value {
-	"INSERT INTO" $table "(value) VALUES(" $value ")"
+insert | table value {
+	"INSERT INTO ${table}(value) VALUES(${value})\n"
 }
 
 insert tbl neet
