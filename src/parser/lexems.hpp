@@ -147,6 +147,11 @@ struct LexemFunction : Lexem {
 	}
 };
 
+struct LexemFunctionCall;
+
+using LexemFunctionCallPtr = std::shared_ptr<LexemFunctionCall>;
+using LexemFunctionCallWPtr = std::weak_ptr<LexemFunctionCall>;
+
 struct LexemFunctionCall : Lexem {
 	string fname;
 	std::vector<LexemPtr> arguments;
@@ -166,6 +171,11 @@ struct LexemFunctionCall : Lexem {
 	}
 };
 
+struct LexemPrint;
+
+using LexemPrintPtr = std::shared_ptr<LexemPrint>;
+using LexemPrintWPtr = std::weak_ptr<LexemPrint>;
+
 struct LexemPrint : Lexem {
 	LexemPtr value;
 
@@ -179,6 +189,11 @@ struct LexemPrint : Lexem {
 		return res.str();
 	}
 };
+
+struct LexemAssign;
+
+using LexemAssignPtr = std::shared_ptr<LexemAssign>;
+using LexemAssignWPtr = std::weak_ptr<LexemAssign>;
 
 struct LexemAssign : Lexem {
 	LexemVarPtr var;
