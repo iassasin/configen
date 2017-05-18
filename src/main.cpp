@@ -6,10 +6,59 @@
  */
 
 #include <iostream>
+#include <fstream>
+
+#include "parser/parser_configen.hpp"
+#include "parser/lexer_configen.hpp"
+#include "parser/interpreter_configen.hpp"
 
 using namespace std;
 
+void runFile(string fn){
+	ifstream file(fn);
+
+	if (!file){
+		cerr << "Error: can't open file '" << fn << "'" << endl;
+		return;
+	}
+
+	ParserConfigen pars(file);
+	LexerConfigen lex(pars);
+	InterpreterConfigen intr(cout);
+
+	try {
+		auto code = lex.parse();
+		intr.run(code);
+	} catch (synparser::compile_exception &e){
+		cerr << fn << " (" << e.line << "): Error: " << e.message << endl;
+	} catch (synparser::runtime_exception &e){
+		cerr << fn << " (" << e.line << "): Error: " << e.message << endl;
+	}
+}
+
 int main(int argc, char **argv){
-	cout << "Configer project" << endl;
+	if (argc < 2){
+		cout << "No input files. Do nothing." << endl
+			<< "For help use --help" << endl;
+	}
+
+	for (int i = 1; i < argc; ++i){
+		auto &arg = argv[i];
+		if (arg == "--help"s){
+			cout << "configen [flags] <files...> [flags]" << endl
+				<< "\t--help - print this help and exit" << endl
+				<< "\t--version - print version and exit" << endl
+			;
+			return 0;
+		}
+		else if (arg == "--version"s){
+			cout << "configen v 0.0.1 indev" << endl;
+			return 0;
+		}
+		else {
+			runFile(arg);
+		}
+	}
+
 	return 0;
 }
