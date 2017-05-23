@@ -41,3 +41,29 @@ test a b
 
 	REQUIRE(out.str() == "0 -> 1\na -> b\n");
 }
+
+TEST_CASE("Interpreter: var assignment", "[Interpreter]"){
+	stringstream input;
+	stringstream out;
+
+	input << R"---(
+$var1 = hello
+$var2 = world
+
+test | var1 {
+	"${var1} ${var2}\n"
+}
+
+test "hello, awesome"
+)---";
+
+	ParserConfigen parser(input);
+	LexerConfigen lexer(parser);
+	InterpreterConfigen intr(out);
+
+	lexer.nextToken();
+	auto blk = lexer.parse();
+	intr.run(blk);
+
+	REQUIRE(out.str() == "hello, awesome world\n");
+}

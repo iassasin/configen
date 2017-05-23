@@ -27,7 +27,7 @@ public:
 	lexem_t parseFunctionDefinitionRegex(token_t id);
 	lexem_t parseFunctionCall(token_t id);
 
-	lexem_t parseVarDefinition();
+	lexem_t parseVarAssignment(token_t id);
 
 	lexem_t parseArgument();
 

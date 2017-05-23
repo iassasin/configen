@@ -28,8 +28,9 @@ protected:
 	void runFunc(LexemFunctionPtr func);
 	void runFuncCall(LexemFunctionCallPtr fcall);
 	void runPrint(LexemPrintPtr print);
+	void runAssign(LexemAssignPtr assign);
 public:
-	InterpreterConfigen(std::ostream &o) : interpreter<LexemPtr>(o) {}
+	InterpreterConfigen(std::ostream &o) : synparser::interpreter<LexemPtr>(o) {}
 
 	virtual void run(lexem_t pgm) override;
 };

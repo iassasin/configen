@@ -58,7 +58,7 @@ TEST_CASE("Lexer: function", "[Lexer]"){
 	stringstream input;
 	input << R"---(
 test | a b {
-	$a $b
+	"${a} ${b}"
 }
 
 )---";
@@ -104,6 +104,32 @@ test 1 2 3
 			LEX(LexemValueString, "2"),
 			LEX(LexemValueString, "3"),
 		}),
+	END;
+
+	REQUIRE(res->to_string() == blk->to_string());
+}
+
+TEST_CASE("Lexer: var assignment", "[Lexer]"){
+	stringstream input;
+	input << R"---(
+$a = 5
+$b =  the     	test   ;
+$c =
+)---";
+
+	ParserConfigen parser(input);
+	LexerConfigen lexer(parser);
+
+	auto blk = lexer.parse();
+	auto res = START(LexemBlock, LexemPtr)
+		LEX(LexemAssign, LEX(LexemVar, "a"), LEX(LexemValueString, "5")),
+		LEX(LexemAssign, LEX(LexemVar, "b"),
+		START(LexemConcat, LexemPtr)
+			LEX(LexemValueString, "the"),
+			LEX(LexemValueString, " "),
+			LEX(LexemValueString, "test"),
+		END),
+		LEX(LexemAssign, LEX(LexemVar, "c"), LEX(LexemValueString, "")),
 	END;
 
 	REQUIRE(res->to_string() == blk->to_string());

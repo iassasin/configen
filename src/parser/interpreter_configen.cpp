@@ -73,6 +73,10 @@ void InterpreterConfigen::run(lexem_t pgm){
 			runPrint(dynamic_pointer_cast<LexemPrint>(pgm));
 			break;
 
+		case LexemType::assign:
+			runAssign(dynamic_pointer_cast<LexemAssign>(pgm));
+			break;
+
 		default:
 			error("Bad instruction: " + pgm->getName());
 			break;
@@ -112,4 +116,8 @@ void InterpreterConfigen::runFuncCall(LexemFunctionCallPtr fcall){
 
 void InterpreterConfigen::runPrint(LexemPrintPtr print){
 	out << readValue(print->value);
+}
+
+void InterpreterConfigen::runAssign(LexemAssignPtr assign){
+	setVar(assign->var->varname, readValue(assign->value));
 }

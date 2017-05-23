@@ -33,28 +33,39 @@ LexerConfigen::lexem_t LexerConfigen::parseLexem(){
 		return nullptr;
 	}
 
-	if (!tok.isId()){
-		if (tok.isStr() || tok.isVar()){
-			return parseLexemPrint();
+	if (tok.isStr()){
+		return parseLexemPrint();
+	}
+
+	if (tok.isVar()){
+		token_t id = tok;
+		nextToken();
+
+		if (tok.isId("=")){
+			nextToken();
+			return parseVarAssignment(id);
 		} else {
-			error(string("Unknown token: ") + tok.to_string());
+			error("Excepted = in var definition");
 		}
 	}
 
-	token_t id = tok;
-	nextToken();
+	if (tok.isId()){
+		token_t id = tok;
+		nextToken();
 
-	if (tok.isId("|")){
-		nextToken();
-		return parseFunctionDefinition(id);
+		if (tok.isId("|")){
+			nextToken();
+			return parseFunctionDefinition(id);
+		} else if (tok.isId("|~")){
+			nextToken();
+			return parseFunctionDefinitionRegex(id);
+		} else {
+			return parseFunctionCall(id);
+		}
 	}
-	else if (tok.isId("|~")){
-		nextToken();
-		return parseFunctionDefinitionRegex(id);
-	}
-	else {
-		return parseFunctionCall(id);
-	}
+
+	error(string("Unknown token: ") + tok.to_string());
+	return nullptr;
 }
 
 LexerConfigen::lexem_t LexerConfigen::parseLexemPrint(){
@@ -142,19 +153,40 @@ LexerConfigen::lexem_t LexerConfigen::parseFunctionCall(token_t id){
 	return fcall;
 }
 
-LexerConfigen::lexem_t LexerConfigen::parseVarDefinition(){
-	if (!tok.isVar()){
-		return nullptr;
+LexerConfigen::lexem_t LexerConfigen::parseVarAssignment(token_t id){
+	auto lassign = make_shared<LexemAssign>();
+	auto lconcat = make_shared<LexemConcat>();
+	lassign->var = make_shared<LexemVar>(id.value);
+
+	while (!(tok.isNone() || tok.isTerm())){
+		if (tok.isSpace()){
+			nextToken();
+
+			if (!(tok.isNone() || tok.isTerm())){
+				lconcat->values.push_back(make_shared<LexemValueString>(" "));
+			}
+		} else {
+			auto arg = parseArgument();
+			if (!arg){
+				error("Unexcepted token: " + tok.to_string());
+			}
+
+			lconcat->values.push_back(arg);
+		}
 	}
-
-	string vname = tok.value;
-
 	nextToken();
-	if (!tok.isId("=")){
-		error("Excepted = after var name");
+
+	if (lconcat->values.size() == 0){
+		lassign->value = make_shared<LexemValueString>("");
+	}
+	else if (lconcat->values.size() == 1){
+		lassign->value = lconcat->values[0];
+	}
+	else {
+		lassign->value = lconcat;
 	}
 
-	return nullptr;
+	return lassign;
 }
 
 LexerConfigen::lexem_t LexerConfigen::parseArgument(){
