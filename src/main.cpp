@@ -12,6 +12,8 @@
 #include "parser/lexer_configen.hpp"
 #include "parser/interpreter_configen.hpp"
 
+#define CONFIGEN_VERSION "0.0.1 indev"
+
 using namespace std;
 
 void runFile(string fn){
@@ -36,6 +38,17 @@ void runFile(string fn){
 	}
 }
 
+void printHelp(){
+	cout << "configen [flags] <files...> [flags]" << endl
+		 << "\t--help - print this help and exit" << endl
+		 << "\t--version - print version and exit" << endl
+			;
+}
+
+void printVersion(){
+	cout << "configen " CONFIGEN_VERSION << endl;
+}
+
 int main(int argc, char **argv){
 	if (argc < 2){
 		cout << "No input files. Do nothing." << endl
@@ -45,14 +58,11 @@ int main(int argc, char **argv){
 	for (int i = 1; i < argc; ++i){
 		auto &arg = argv[i];
 		if (arg == "--help"s){
-			cout << "configen [flags] <files...> [flags]" << endl
-				<< "\t--help - print this help and exit" << endl
-				<< "\t--version - print version and exit" << endl
-			;
+			printHelp();
 			return 0;
 		}
 		else if (arg == "--version"s){
-			cout << "configen v 0.0.1 indev" << endl;
+			printVersion();
 			return 0;
 		}
 		else {
