@@ -18,9 +18,22 @@
 using namespace std;
 using namespace synparser;
 
+static string interpret(istream &input){
+	stringstream out;
+
+	ParserConfigen parser(input);
+	LexerConfigen lexer(parser);
+	InterpreterConfigen intr(out);
+
+	lexer.nextToken();
+	auto blk = lexer.parse();
+	intr.run(blk);
+
+	return out.str();
+}
+
 TEST_CASE("Interpreter: base", "[Interpreter]"){
 	stringstream input;
-	stringstream out;
 
 	input << R"---(
 test | aa b {
@@ -31,20 +44,11 @@ test 0 1
 test a b
 )---";
 
-	ParserConfigen parser(input);
-	LexerConfigen lexer(parser);
-	InterpreterConfigen intr(out);
-
-	lexer.nextToken();
-	auto blk = lexer.parse();
-	intr.run(blk);
-
-	REQUIRE(out.str() == "0 -> 1\na -> b\n");
+	REQUIRE(interpret(input) == "0 -> 1\na -> b\n");
 }
 
 TEST_CASE("Interpreter: var assignment", "[Interpreter]"){
 	stringstream input;
-	stringstream out;
 
 	input << R"---(
 $var1 = hello
@@ -57,13 +61,5 @@ test | var1 {
 test "hello, awesome"
 )---";
 
-	ParserConfigen parser(input);
-	LexerConfigen lexer(parser);
-	InterpreterConfigen intr(out);
-
-	lexer.nextToken();
-	auto blk = lexer.parse();
-	intr.run(blk);
-
-	REQUIRE(out.str() == "hello, awesome world\n");
+	REQUIRE(interpret(input) == "hello, awesome world\n");
 }
