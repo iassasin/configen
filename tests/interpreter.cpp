@@ -63,3 +63,27 @@ test "hello, awesome"
 
 	REQUIRE(interpret(input) == "hello, awesome world\n");
 }
+
+TEST_CASE("Interpreter: function overload", "[Interpreter]"){
+	stringstream input;
+
+	input << R"---(
+test | v1 v2 {
+	"2: ${v1} ${v2}\n"
+}
+
+test | v1 v2 v3 {
+	"3: ${v1} ${v2} ${v3}\n"
+}
+
+test | v1 {
+	"1: ${v1}\n"
+}
+
+test 1 2 3
+test 1
+test 1 2
+)---";
+
+	REQUIRE(interpret(input) == "3: 1 2 3\n1: 1\n2: 1 2\n");
+}

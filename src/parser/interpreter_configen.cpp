@@ -2,12 +2,41 @@
 
 using namespace std;
 
-LexemFunctionPtr InterpreterConfigen::readFunc(string name){
-	auto f = functions.find(name);
-	if (f != functions.end())
-		return f->second;
+LexemFunctionPtr InterpreterConfigen::findFuncAndApplyArgs(string name, const vector<string> &args, InterpreterConfigen &scope){
+	auto fs = functions.find(name);
+	if (fs != functions.end()){
+		for (auto f : fs->second){
+			if (f->arguments.size() == args.size()){
+				for (size_t i = 0; i < args.size(); ++i){
+					scope.setVar(f->arguments[i], args[i]);
+				}
+				return f;
+			}
+		}
+	}
 
-	return parent ? parent->readFunc(name) : nullptr;
+	return parent ? parent->findFuncAndApplyArgs(name, args, scope) : nullptr;
+}
+
+void InterpreterConfigen::addFunction(string name, LexemFunctionPtr func){
+	auto fs = functions.find(name);
+	if (fs == functions.end()){
+		functions[name] = {func};
+		return;
+	}
+
+	auto ns = func->arguments.size();
+	for (auto it = fs->second.begin(); it != fs->second.end(); ++it){
+		auto sz = (*it)->arguments.size();
+		if (ns > sz){
+			fs->second.insert(it, func);
+			return;
+		} else if (ns == sz){
+			error("Function '" + func->fname + "' with " + to_string(ns) + " arguments already defined");
+		}
+	}
+
+	fs->second.push_back(func);
 }
 
 string InterpreterConfigen::readVar(string name){
@@ -16,10 +45,6 @@ string InterpreterConfigen::readVar(string name){
 		return f->second;
 
 	return parent ? parent->readVar(name) : "";
-}
-
-void InterpreterConfigen::addFunction(string name, LexemFunctionPtr func){
-	functions[name] = func;
 }
 
 void InterpreterConfigen::setVar(string name, string value){
@@ -94,23 +119,20 @@ void InterpreterConfigen::runFunc(LexemFunctionPtr func){
 }
 
 void InterpreterConfigen::runFuncCall(LexemFunctionCallPtr fcall){
-	auto f = readFunc(fcall->fname);
+	InterpreterConfigen scope(out);
+
+	vector<string> args;
+	for (auto arg : fcall->arguments){
+		args.push_back(readValue(arg));
+	}
+
+	auto f = findFuncAndApplyArgs(fcall->fname, args, scope);
 
 	if (!f){
-		error(string("Function '") + fcall->fname + "' not found");
-	}
-	if (f->arguments.size() != fcall->arguments.size()){
-		error(string("Invalid arguments for function '") + f->fname + "': " + to_string(fcall->arguments.size()) + " passed, but " + to_string(f->arguments.size()) + " excepted");
+		error(string("No matching function '") + fcall->fname + "' for call");
 	}
 
-	InterpreterConfigen scope(out);
 	scope.setParent(*this);
-
-	size_t len = f->arguments.size();
-	for (size_t i = 0; i < len; ++i){
-		scope.setVar(f->arguments[i], readValue(fcall->arguments[i]));
-	}
-
 	scope.run(f->body);
 }
 

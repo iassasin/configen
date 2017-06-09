@@ -12,13 +12,13 @@
 class InterpreterConfigen : synparser::interpreter<LexemPtr> {
 protected:
 	InterpreterConfigen *parent = nullptr;
-	std::unordered_map<std::string, LexemFunctionPtr> functions;
+	std::unordered_map<std::string, std::vector<LexemFunctionPtr>> functions;
 	std::unordered_map<std::string, std::string> variables;
 
-	LexemFunctionPtr readFunc(std::string name);
-	std::string readVar(std::string name);
-
+	LexemFunctionPtr findFuncAndApplyArgs(std::string name, const std::vector<string> &args, InterpreterConfigen &scope);
 	void addFunction(std::string name, LexemFunctionPtr func);
+
+	std::string readVar(std::string name);
 	void setVar(std::string name, std::string value);
 
 	inline void setParent(InterpreterConfigen &i){ parent = &i; }
