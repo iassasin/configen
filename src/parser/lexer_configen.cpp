@@ -1,3 +1,5 @@
+#include <sstream>
+
 #include "lexer_configen.hpp"
 
 using namespace std;
@@ -127,8 +129,53 @@ LexerConfigen::lexem_t LexerConfigen::parseFunctionDefinition(token_t id){
 }
 
 LexerConfigen::lexem_t LexerConfigen::parseFunctionDefinitionRegex(token_t id){
-	error("Not supported yet");
-	return nullptr;
+	ostringstream rx;
+	auto func = make_shared<LexemFunctionRegex>();
+	func->fname = id.value;
+
+	bool wasSpace = false;
+	while (!(tok.isNone() || tok.isId("{"))){
+		if (wasSpace){
+			wasSpace = false;
+			rx << " ";
+		}
+
+		if (tok.isId() || (tok.isStr() && !tok.hasParts())){
+			rx << tok.value;
+		}
+		else if (tok.isSpace()){
+			wasSpace = true;
+		}
+		else if (tok.isTerm()){
+			//continue
+		}
+		else {
+			error("Unexcepted token in function definition: " + tok.to_string());
+		}
+
+		nextTokenWithSpaces();
+	}
+
+	try {
+		func->setRegex(rx.str());
+	} catch (const regex_error &err){
+		error("Error in regex expression: "s + err.what());
+	}
+
+	if (!tok.isId("{")){
+		error("Excepted { in function definition");
+	}
+
+	nextToken();
+	func->body = parseBlock();
+
+	if (!tok.isId("}")){
+		error("Excepted } at end of function definition");
+	}
+
+	nextToken();
+
+	return func;
 }
 
 LexerConfigen::lexem_t LexerConfigen::parseFunctionCall(token_t id){

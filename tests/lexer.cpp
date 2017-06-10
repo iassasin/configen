@@ -134,3 +134,31 @@ $c =
 
 	REQUIRE(res->to_string() == blk->to_string());
 }
+
+TEST_CASE("Lexer: function regex", "[Lexer]"){
+	stringstream input;
+	input << R"---(
+test |~ (\d+):(\d+) {
+	"${1} ${2}"
+}
+
+)---";
+
+	ParserConfigen parser(input);
+	LexerConfigen lexer(parser);
+
+	auto blk = lexer.parse();
+	auto res = START(LexemBlock, LexemPtr)
+		LEX(LexemFunctionRegex, "test", "(\\d+):(\\d+)",
+		START(LexemBlock, LexemPtr)
+			LEX(LexemPrint,
+			START(LexemConcat, LexemPtr)
+				LEX(LexemVar, "1"),
+				LEX(LexemValueString, " "),
+				LEX(LexemVar, "2"),
+			END),
+		END),
+	END;
+
+	REQUIRE(res->to_string() == blk->to_string());
+}

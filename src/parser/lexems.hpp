@@ -7,6 +7,7 @@
 #include <cstdint>
 #include <unordered_map>
 #include <initializer_list>
+#include <regex>
 
 using std::string;
 
@@ -19,6 +20,7 @@ enum class LexemType : int16_t {
 
 	block,
 	func,
+	funcrx,
 	funccall,
 	print,
 
@@ -128,6 +130,10 @@ using LexemFunctionPtr = std::shared_ptr<LexemFunction>;
 using LexemFunctionWPtr = std::weak_ptr<LexemFunction>;
 
 struct LexemFunction : Lexem {
+protected:
+	LexemFunction(LexemType tp) : Lexem(tp){}
+	LexemFunction(LexemType tp, string fn, std::vector<string> &&args, LexemBlockPtr bd) : Lexem(tp), fname(fn), arguments(args), body(bd){}
+public:
 	string fname;
 	std::vector<string> arguments;
 	LexemBlockPtr body;
@@ -142,6 +148,34 @@ struct LexemFunction : Lexem {
 			res << s << ", ";
 		}
 		res << "], " << (body ? body->to_string() : "null") << "]";
+
+		return res.str();
+	}
+};
+
+struct LexemFunctionRegex;
+
+using LexemFunctionRegexPtr = std::shared_ptr<LexemFunctionRegex>;
+using LexemFunctionRegexWPtr = std::weak_ptr<LexemFunctionRegex>;
+
+struct LexemFunctionRegex : LexemFunction {
+	string argsrxstr;
+	std::regex argsrx;
+
+	LexemFunctionRegex() : LexemFunction(LexemType::funcrx){}
+	LexemFunctionRegex(string fn, string rx, LexemBlockPtr bd) : LexemFunction(LexemType::funcrx, fn, {}, bd)
+	{
+		setRegex(rx);
+	}
+
+	void setRegex(string rx){
+		argsrxstr = rx;
+		argsrx = std::regex(rx, std::regex::ECMAScript | std::regex::optimize);
+	}
+
+	virtual string to_string(){
+		std::ostringstream res;
+		res << "[" << getName() << ", " << fname << ", " << argsrxstr << ", " << (body ? body->to_string() : "null") << "]";
 
 		return res.str();
 	}
