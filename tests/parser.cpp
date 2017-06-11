@@ -19,6 +19,23 @@ CATCH_STRING_MAKER(token){
 	return value.to_string();
 }
 
+void checkParse(istream &strm, const vector<token> &res){
+	ParserConfigen parser(strm);
+	int i = 0;
+	while(true){
+		auto tok = parser.next();
+		if (tok.type == token::none){
+			break;
+		}
+
+		REQUIRE(tok == res[i]);
+
+		++i;
+	}
+
+	REQUIRE(i == res.size());
+}
+
 TEST_CASE("Parser: basic", "[Parser]"){
 	stringstream str;
 
@@ -32,7 +49,7 @@ test | v w {
 test "${v2} var ${test}" 1 2 $haha 
 )---";
 
-	vector<token> res {
+	checkParse(str, {
 		token(token::term, "\n"),
 
 		token(token::id, "test"),
@@ -96,21 +113,32 @@ test "${v2} var ${test}" 1 2 $haha
 		token(token::var, "haha"),
 		token(token::space, " "),
 		token(token::term, "\n"),
-	};
+	});
+}
 
+TEST_CASE("Parser: string inline variables", "[Parser]"){
+	stringstream str;
 
-	ParserConfigen parser(str);
-	int i = 0;
-	while(true){
-		auto tok = parser.next();
-		if (tok.type == token::none){
-			break;
-		}
+	str << R"---(
+'$a $b c'
+"$a ${b}$c${d}e$1f:g"
+)---";
 
-		REQUIRE(tok == res[i]);
+	checkParse(str, {
+		token(token::term, "\n"),
 
-		++i;
-	}
-
-	REQUIRE(i == res.size());
+		token(token::str, "$a $b c"),
+		token(token::term, "\n"),
+		token(token::str, "", {
+			token(token::var, "a"),
+			token(token::str, " "),
+			token(token::var, "b"),
+			token(token::var, "c"),
+			token(token::var, "d"),
+			token(token::str, "e"),
+			token(token::var, "1f"),
+			token(token::str, ":g"),
+		}),
+		token(token::term, "\n"),
+	});
 }

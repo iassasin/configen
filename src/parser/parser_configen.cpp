@@ -77,7 +77,8 @@ ParserConfigen::token_t ParserConfigen::next(){
 			token_t tok(token_t::str);
 			bool escape = false;
 
-			while ((cur = nextchar()) != EOF){
+			cur = nextchar();
+			while (cur != EOF){
 				if (escape){
 					escape = false;
 					switch (cur){
@@ -98,10 +99,12 @@ ParserConfigen::token_t ParserConfigen::next(){
 							part += cur;
 							break;
 					}
+					cur = nextchar();
 				} else if (cur == send){
 					break;
 				} else if (cur == '\\'){
 					escape = true;
+					cur = nextchar();
 				} else if (cur == '$'){
 					if (!part.empty()){
 						tok.parts.push_back(token_t(token_t::str, part));
@@ -109,19 +112,25 @@ ParserConfigen::token_t ParserConfigen::next(){
 					}
 
 					cur = nextchar();
-					if (cur != '{'){
-						error("Excepted { in string constant (for variable name)");
+					if (cur == '{'){
+						while ((cur = nextchar()) != EOF){
+							if (cur == '}')
+								break;
+
+							part += cur;
+						}
+
+						if (cur != '}'){
+							error("Excepted } in string constant (for variable name)");
+						}
+
+						cur = nextchar();
 					}
-
-					while ((cur = nextchar()) != EOF){
-						if (cur == '}')
-							break;
-
-						part += cur;
-					}
-
-					if (cur != '}'){
-						error("Excepted } in string constant (for variable name)");
+					else {
+						while (cur != EOF && (cur >= '0' && cur <= '9' || cur >= 'a' && cur <= 'z' || cur >= 'A' && cur <= 'Z')){
+							part += cur;
+							cur = nextchar();
+						}
 					}
 
 					if (part.empty()){
@@ -132,6 +141,7 @@ ParserConfigen::token_t ParserConfigen::next(){
 					part.clear();
 				} else {
 					part += cur;
+					cur = nextchar();
 				}
 			}
 

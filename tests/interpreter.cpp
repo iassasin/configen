@@ -37,7 +37,7 @@ TEST_CASE("Interpreter: base", "[Interpreter]"){
 
 	input << R"---(
 test | aa b {
-	"${aa} -> ${b}\n"
+	"$aa -> $b\n"
 }
 
 test 0 1
@@ -55,7 +55,7 @@ $var1 = hello
 $var2 = world
 
 test | var1 {
-	"${var1} ${var2}\n"
+	"$var1 $var2\n"
 }
 
 test "hello, awesome"
@@ -69,23 +69,23 @@ TEST_CASE("Interpreter: function overload", "[Interpreter]"){
 
 	input << R"---(
 test | v1 v2 {
-	"2: ${v1} ${v2}\n"
+	"2: $v1 $v2\n"
 }
 
 test | v1 v2 v3 {
-	"3: ${v1} ${v2} ${v3}\n"
+	"3: $v1 $v2 $v3\n"
 }
 
 test |~ (\d+):(\d+) {
-	"nums: ${1} ${2}\n"
+	"nums: $1 $2\n"
 }
 
 test |~ (\d+)[^\s]* {
-	"snum: ${0}\n"
+	"snum: $0\n"
 }
 
 test | v1 {
-	"1: ${v1}\n"
+	"1: $v1\n"
 }
 
 test 1 2 3
@@ -103,11 +103,11 @@ TEST_CASE("Interpreter: function regex", "[Interpreter]"){
 
 	input << R"---(
 test |~ (\d+):(\d+) {
-	"nums: ${1} ${2}\n"
+	"nums: $1 $2\n"
 }
 
 test |~ .* {
-	"wildcard: ${0}\n"
+	"wildcard: $0\n"
 }
 
 test 55:22

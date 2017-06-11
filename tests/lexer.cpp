@@ -24,8 +24,8 @@ using namespace synparser;
 TEST_CASE("Lexer: print", "[Lexer]"){
 	stringstream input;
 	input << R"---(
-'${a} b'$c    d
-"${a} b"$c'd'
+'$a b'$c    d
+"$a b"$c'd'
 )---";
 
 	ParserConfigen parser(input);
@@ -36,7 +36,7 @@ TEST_CASE("Lexer: print", "[Lexer]"){
 		LEX(LexemPrint,
 		START(LexemConcat, LexemPtr)
 			START(LexemConcat, LexemPtr)
-				LEX(LexemValueString, "${a} b"),
+				LEX(LexemValueString, "$a b"),
 				LEX(LexemVar, "c"),
 			END,
 			LEX(LexemValueString, " "),
@@ -58,7 +58,7 @@ TEST_CASE("Lexer: function", "[Lexer]"){
 	stringstream input;
 	input << R"---(
 test | a b {
-	"${a} ${b}"
+	"$a $b"
 }
 
 )---";
@@ -139,7 +139,7 @@ TEST_CASE("Lexer: function regex", "[Lexer]"){
 	stringstream input;
 	input << R"---(
 test |~ (\d+):(\d+) {
-	"${1} ${2}"
+	"$1 $2"
 }
 
 )---";
