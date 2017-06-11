@@ -90,6 +90,7 @@ ParserConfigen::token_t ParserConfigen::next(){
 						case '"':
 						case '\\':
 						case '$':
+						case '\n':
 							part += cur;
 							break;
 
@@ -101,10 +102,14 @@ ParserConfigen::token_t ParserConfigen::next(){
 					}
 					cur = nextchar();
 				} else if (cur == send){
+					cur = nextchar();
 					break;
 				} else if (cur == '\\'){
 					escape = true;
 					cur = nextchar();
+				} else if (cur == '\n'){
+					part += cur;
+					break;
 				} else if (cur == '$'){
 					if (!part.empty()){
 						tok.parts.push_back(token_t(token_t::str, part));
@@ -113,11 +118,10 @@ ParserConfigen::token_t ParserConfigen::next(){
 
 					cur = nextchar();
 					if (cur == '{'){
-						while ((cur = nextchar()) != EOF){
-							if (cur == '}')
-								break;
-
+						cur = nextchar();
+						while (cur != EOF && cur != '}' && cur != '\n'){
 							part += cur;
+							cur = nextchar();
 						}
 
 						if (cur != '}'){
@@ -144,12 +148,6 @@ ParserConfigen::token_t ParserConfigen::next(){
 					cur = nextchar();
 				}
 			}
-
-			if (cur != send){
-				error("Unexpected end of string constant");
-			}
-
-			cur = nextchar();
 
 			if (!part.empty()){
 				if (tok.hasParts()){

@@ -142,3 +142,37 @@ TEST_CASE("Parser: string inline variables", "[Parser]"){
 		token(token::term, "\n"),
 	});
 }
+
+TEST_CASE("Parser: auto eol strings", "[Parser]"){
+	stringstream str;
+
+	str << R"---(
+"Line 1
+"Line 2 ${fd}
+test
+"Line $123
+)---";
+
+	checkParse(str, {
+		token(token::term, "\n"),
+
+		token(token::str, "Line 1\n"),
+		token(token::term, "\n"),
+		token(token::str, "", {
+			token(token::str, "Line 2 "),
+			token(token::var, "fd"),
+			token(token::str, "\n"),
+		}),
+		token(token::term, "\n"),
+
+		token(token::id, "test"),
+		token(token::term, "\n"),
+
+		token(token::str, "", {
+			token(token::str, "Line "),
+			token(token::var, "123"),
+			token(token::str, "\n"),
+		}),
+		token(token::term, "\n"),
+	});
+}
