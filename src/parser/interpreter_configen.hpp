@@ -26,6 +26,7 @@ protected:
 
 	void runBlock(LexemBlockPtr block);
 	void runFunc(LexemFunctionPtr func);
+	void runFuncRegex(LexemFunctionRegexPtr func);
 	void runFuncCall(LexemFunctionCallPtr fcall);
 	void runPrint(LexemPrintPtr print);
 	void runAssign(LexemAssignPtr assign);

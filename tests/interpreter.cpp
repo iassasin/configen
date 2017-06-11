@@ -76,6 +76,14 @@ test | v1 v2 v3 {
 	"3: ${v1} ${v2} ${v3}\n"
 }
 
+test |~ (\d+):(\d+) {
+	"nums: ${1} ${2}\n"
+}
+
+test |~ (\d+)[^\s]* {
+	"snum: ${0}\n"
+}
+
 test | v1 {
 	"1: ${v1}\n"
 }
@@ -83,7 +91,28 @@ test | v1 {
 test 1 2 3
 test 1
 test 1 2
+test fas
+test 1:2
 )---";
 
-	REQUIRE(interpret(input) == "3: 1 2 3\n1: 1\n2: 1 2\n");
+	REQUIRE(interpret(input) == "3: 1 2 3\nsnum: 1\n2: 1 2\n1: fas\nnums: 1 2\n");
+}
+
+TEST_CASE("Interpreter: function regex", "[Interpreter]"){
+	stringstream input;
+
+	input << R"---(
+test |~ (\d+):(\d+) {
+	"nums: ${1} ${2}\n"
+}
+
+test |~ .* {
+	"wildcard: ${0}\n"
+}
+
+test 55:22
+test 5522
+)---";
+
+	REQUIRE(interpret(input) == "nums: 55 22\nwildcard: 5522\n");
 }

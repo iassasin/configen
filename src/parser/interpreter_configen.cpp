@@ -3,14 +3,42 @@
 using namespace std;
 
 LexemFunctionPtr InterpreterConfigen::findFuncAndApplyArgs(string name, const vector<string> &args, InterpreterConfigen &scope){
+	string allargs;
+	bool allargsready = false;
+
 	auto fs = functions.find(name);
 	if (fs != functions.end()){
 		for (auto f : fs->second){
-			if (f->arguments.size() == args.size()){
-				for (size_t i = 0; i < args.size(); ++i){
-					scope.setVar(f->arguments[i], args[i]);
+			if (f->getType() == LexemType::func){
+				if (f->arguments.size() == args.size()){
+					for (size_t i = 0; i < args.size(); ++i){
+						scope.setVar(f->arguments[i], args[i]);
+					}
+					return f;
 				}
-				return f;
+			}
+			else if (f->getType() == LexemType::funcrx){
+				if (!allargsready){
+					if (args.size() > 0){
+						allargs = args[0];
+						if (args.size() > 1){
+							for (size_t i = 1; i < args.size(); ++i){
+								allargs += " ";
+								allargs += args[i];
+							}
+						}
+					}
+					allargsready = true;
+				}
+
+				auto frx = dynamic_pointer_cast<LexemFunctionRegex>(f);
+				smatch match;
+				if (regex_match(allargs, match, frx->argsrx)){
+					for (size_t i = 0; i < match.size(); ++i){
+						scope.setVar(to_string(i), match[i].str());
+					}
+					return frx;
+				}
 			}
 		}
 	}
@@ -25,15 +53,30 @@ void InterpreterConfigen::addFunction(string name, LexemFunctionPtr func){
 		return;
 	}
 
-	auto ns = func->arguments.size();
-	for (auto it = fs->second.begin(); it != fs->second.end(); ++it){
-		auto sz = (*it)->arguments.size();
-		if (ns > sz){
-			fs->second.insert(it, func);
-			return;
-		} else if (ns == sz){
-			error("Function '" + func->fname + "' with " + to_string(ns) + " arguments already defined");
+	if (func->getType() == LexemType::func){
+		auto ns = func->arguments.size();
+		for (auto it = fs->second.begin(); it != fs->second.end(); ++it){
+			if ((*it)->getType() == LexemType::func){
+				auto sz = (*it)->arguments.size();
+				if (ns > sz){
+					fs->second.insert(it, func);
+					return;
+				} else if (ns == sz){
+					error("Function '" + func->fname + "' with " + to_string(ns) + " arguments already defined");
+				}
+			}
 		}
+	}
+	else if (func->getType() == LexemType::funcrx){
+		for (auto it = fs->second.begin(); it != fs->second.end(); ++it){
+			if ((*it)->getType() == LexemType::func){
+				fs->second.insert(it, func);
+				return;
+			}
+		}
+	}
+	else {
+		error("Unknown function type: " + func->getName());
 	}
 
 	fs->second.push_back(func);
@@ -90,6 +133,10 @@ void InterpreterConfigen::run(lexem_t pgm){
 			runFunc(dynamic_pointer_cast<LexemFunction>(pgm));
 			break;
 
+		case LexemType::funcrx:
+			runFuncRegex(dynamic_pointer_cast<LexemFunctionRegex>(pgm));
+			break;
+
 		case LexemType::funccall:
 			runFuncCall(dynamic_pointer_cast<LexemFunctionCall>(pgm));
 			break;
@@ -115,6 +162,10 @@ void InterpreterConfigen::runBlock(LexemBlockPtr block){
 }
 
 void InterpreterConfigen::runFunc(LexemFunctionPtr func){
+	addFunction(func->fname, func);
+}
+
+void InterpreterConfigen::runFuncRegex(LexemFunctionRegexPtr func){
 	addFunction(func->fname, func);
 }
 
