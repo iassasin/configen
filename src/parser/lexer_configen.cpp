@@ -52,6 +52,10 @@ LexerConfigen::lexem_t LexerConfigen::parseLexem(){
 	}
 
 	if (tok.isId()){
+		if (tok.value[0] == '@'){
+			return parseLangDirective();
+		}
+
 		token_t id = tok;
 		nextToken();
 
@@ -92,6 +96,44 @@ LexerConfigen::lexem_t LexerConfigen::parseLexemPrint(){
 	}
 
 	return make_shared<LexemPrint>(vals);
+}
+
+LexerConfigen::lexem_t LexerConfigen::parseLangDirective(){
+	string dir = tok.value;
+
+	if (dir == "@use"){
+		nextToken();
+		return parseDirectiveUse();
+	}
+	else {
+		error("Unknown directive: " + dir);
+	}
+
+	return nullptr;
+}
+
+LexerConfigen::lexem_t LexerConfigen::parseDirectiveUse(){
+	string fname;
+
+	if (tok.isId()){
+		fname = tok.value;
+	}
+	else if (tok.isStr()){
+		if (tok.hasParts()){
+			error("Variables not allowed here");
+		}
+		fname = tok.value;
+	}
+	else {
+		error("Excepted string, but found " + tok.to_string());
+	}
+
+	nextToken();
+	if (!(tok.isNone() || tok.isTerm())){
+		error("Excepted end of directive");
+	}
+
+	return make_shared<LexemUse>(fname);
 }
 
 LexerConfigen::lexem_t LexerConfigen::parseFunctionDefinition(token_t id){

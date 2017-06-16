@@ -162,3 +162,20 @@ test |~ (\d+):(\d+) {
 
 	REQUIRE(res->to_string() == blk->to_string());
 }
+
+TEST_CASE("Lexer: @use directive", "[Lexer]"){
+	stringstream input;
+	input << R"---(
+@use file
+)---";
+
+	ParserConfigen parser(input);
+	LexerConfigen lexer(parser);
+
+	auto blk = lexer.parse();
+	auto res = START(LexemBlock, LexemPtr)
+		LEX(LexemUse, "file"),
+	END;
+
+	REQUIRE(res->to_string() == blk->to_string());
+}

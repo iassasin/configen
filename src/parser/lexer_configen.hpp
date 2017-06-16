@@ -23,6 +23,9 @@ public:
 	lexem_t parseLexem();
 	lexem_t parseLexemPrint();
 
+	lexem_t parseLangDirective();
+	lexem_t parseDirectiveUse();
+
 	lexem_t parseFunctionDefinition(token_t id);
 	lexem_t parseFunctionDefinitionRegex(token_t id);
 	lexem_t parseFunctionCall(token_t id);

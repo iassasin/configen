@@ -15,6 +15,8 @@ enum class LexemType : int16_t {
 	invalid = -1,
 	none = 0,
 
+	use,
+
 	var,
 	valstr,
 
@@ -76,6 +78,17 @@ struct LexemConcat : Lexem {
 
 		return res.str();
 	}
+};
+
+//Lang
+
+struct LexemUse : Lexem {
+	string fname;
+
+	LexemUse() : Lexem(LexemType::use){}
+	LexemUse(string _name) : Lexem(LexemType::use), fname(_name){}
+
+	virtual string to_string(){ return string() + "[" + getName() + ", " + fname + "]"; }
 };
 
 //Variables
